@@ -1,5 +1,6 @@
 import { Redis } from 'ioredis';
-import { redis } from './redis';
+import Log from '@/models/Log';
+import dbConnect from './mongodb';
 
 const LOG_CHANNEL = 'log-stream';
 
@@ -18,13 +19,19 @@ export const startLogListener = (onLog: (log: any) => void) => {
     console.log(`Subscribed to ${LOG_CHANNEL}. Current subscriptions: ${count}`);
   });
 
-  subClient.on('message', (channel, message) => {
+  subClient.on('message', async (channel, message) => {
     if (channel === LOG_CHANNEL) {
       try {
         const logData = JSON.parse(message);
+        
+        // Save to MongoDB
+        await dbConnect();
+        const newLog = new Log(logData);
+        await newLog.save();
+        
         onLog(logData);
       } catch (error) {
-        console.error('Error parsing log message:', error);
+        console.error('Error processing log message:', error);
       }
     }
   });
