@@ -25,7 +25,6 @@ export const startLogListener = (onLog: (log: any) => void) => {
         const logData = JSON.parse(message);
         
         // Save to MongoDB
-        await dbConnect();
         const newLog = new Log(logData);
         await newLog.save();
         
