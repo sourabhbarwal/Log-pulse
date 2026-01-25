@@ -1,0 +1,22 @@
+import mongoose, { Schema, Document, Model } from 'mongoose';
+
+export interface ILog extends Document {
+  timestamp: Date;
+  level: 'INFO' | 'WARN' | 'ERROR';
+  message: string;
+  source?: string;
+  metadata?: Record<string, any>;
+}
+
+const LogSchema: Schema = new Schema({
+  timestamp: { type: Date, default: Date.now, index: true },
+  level: { type: String, enum: ['INFO', 'WARN', 'ERROR'], required: true, index: true },
+  message: { type: String, required: true },
+  source: { type: String },
+  metadata: { type: Schema.Types.Mixed },
+});
+
+// Ensure the model isn't compiled multiple times in development
+const Log: Model<ILog> = mongoose.models.Log || mongoose.model<ILog>('Log', LogSchema);
+
+export default Log;
