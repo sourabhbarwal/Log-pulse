@@ -10,12 +10,21 @@ import {
   Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import NotificationPanel from "./NotificationPanel";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  notifications?: any[];
+  onClearNotifications?: () => void;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
+  children, 
+  notifications = [], 
+  onClearNotifications 
+}) => {
+  const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
       {/* Navigation Rail */}
@@ -27,7 +36,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <nav className="flex-1 flex flex-col gap-8">
           <NavItem icon={<LayoutDashboard size={20} />} active />
           <NavItem icon={<FileText size={20} />} />
-          <NavItem icon={<Bell size={20} />} />
+          <NavItem 
+            icon={
+              <div className="relative">
+                <Bell size={20} />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-[#F8F9F9]">
+                    {notifications.length}
+                  </span>
+                )}
+              </div>
+            } 
+            onClick={() => setIsNotifOpen(true)}
+          />
         </nav>
         
         <div className="mt-auto">
@@ -62,18 +83,36 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
           {children}
         </div>
+
+        <NotificationPanel 
+          isOpen={isNotifOpen} 
+          onOpenChange={setIsNotifOpen} 
+          notifications={notifications}
+          onClear={onClearNotifications}
+        />
       </main>
     </div>
   );
 };
 
-const NavItem = ({ icon, active = false }: { icon: React.ReactNode; active?: boolean }) => (
-  <button className={cn(
-    "p-2.5 rounded-xl transition-all duration-200",
-    active 
-      ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/5" 
-      : "text-muted-foreground hover:bg-secondary/10 hover:text-foreground"
-  )}>
+const NavItem = ({ 
+  icon, 
+  active = false, 
+  onClick 
+}: { 
+  icon: React.ReactNode; 
+  active?: boolean;
+  onClick?: () => void;
+}) => (
+  <button 
+    onClick={onClick}
+    className={cn(
+      "p-2.5 rounded-xl transition-all duration-200 cursor-pointer",
+      active 
+        ? "bg-primary/10 text-primary shadow-sm ring-1 ring-primary/5" 
+        : "text-muted-foreground hover:bg-secondary/10 hover:text-foreground"
+    )}
+  >
     {icon}
   </button>
 );

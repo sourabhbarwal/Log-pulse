@@ -8,7 +8,7 @@ import LogTrendChart from "@/components/LogTrendChart";
 import { useEffect, useState } from "react";
 
 export default function Home() {
-  const { logs, isConnected } = useSocket();
+  const { logs, notifications, clearNotifications, isConnected } = useSocket();
   const [chartData, setChartData] = useState<{ time: string; count: number }[]>([]);
 
   // Update chart data based on logs
@@ -25,7 +25,7 @@ export default function Home() {
   const errorCount = logs.filter(l => l.level === "ERROR").length;
 
   return (
-    <DashboardLayout>
+    <DashboardLayout notifications={notifications} onClearNotifications={clearNotifications}>
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between mb-2">
           <div>

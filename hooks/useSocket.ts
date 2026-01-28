@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { toast } from 'sonner';
 
 export const useSocket = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
@@ -18,6 +20,16 @@ export const useSocket = () => {
 
     socketInstance.on('new-log', (log) => {
       setLogs((prev) => [log, ...prev].slice(0, 50)); // Keep last 50 logs
+
+      if (log.level === 'ERROR') {
+        // Add to persistent notifications
+        setNotifications((prev) => [log, ...prev].slice(0, 20));
+        
+        toast.error(`Critical Error: ${log.source || 'system'}`, {
+          description: log.message,
+          duration: 5000,
+        });
+      }
     });
 
     socketInstance.on('disconnect', () => {
@@ -32,5 +44,9 @@ export const useSocket = () => {
     };
   }, []);
 
-  return { socket, logs, isConnected };
+  const clearNotifications = () => {
+    setNotifications([]);
+  };
+
+  return { socket, logs, notifications, clearNotifications, isConnected };
 };
