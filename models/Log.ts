@@ -14,7 +14,11 @@ const LogSchema: Schema = new Schema({
   message: { type: String, required: true },
   source: { type: String },
   metadata: { type: Schema.Types.Mixed },
+  fingerprint: { type: String, index: true },
 });
+
+// Create a text index for full-text search
+LogSchema.index({ message: 'text', source: 'text' });
 
 // Ensure the model isn't compiled multiple times in development
 const Log: Model<ILog> = mongoose.models.Log || mongoose.model<ILog>('Log', LogSchema);

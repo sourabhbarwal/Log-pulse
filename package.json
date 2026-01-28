@@ -9,6 +9,7 @@
     "start": "next start",
     "start:socket": "cross-env NODE_ENV=production tsx --env-file=.env.local server.ts",
     "simulate": "node scripts/simulate-logs.cjs",
+    "benchmark": "node scripts/benchmark.cjs",
     "lint": "eslint"
   },
   "dependencies": {
@@ -24,6 +25,7 @@
     "lucide-react": "^0.563.0",
     "mongoose": "^9.1.5",
     "next": "16.1.4",
+    "next-auth": "^5.0.0-beta.30",
     "next-themes": "^0.4.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",

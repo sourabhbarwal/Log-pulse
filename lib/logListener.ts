@@ -1,6 +1,7 @@
 import { Redis } from 'ioredis';
 import Log from '@/models/Log';
 import dbConnect from './mongodb';
+import { generateFingerprint } from './fingerprint';
 
 const LOG_CHANNEL = 'log-stream';
 
@@ -24,11 +25,15 @@ export const startLogListener = (onLog: (log: any) => void) => {
       try {
         const logData = JSON.parse(message);
         
+        // Generate fingerprint for grouping
+        const fingerprint = generateFingerprint(logData.message);
+        const enrichedLog = { ...logData, fingerprint };
+
         // Save to MongoDB
-        const newLog = new Log(logData);
+        const newLog = new Log(enrichedLog);
         await newLog.save();
         
-        onLog(logData);
+        onLog(enrichedLog);
       } catch (error) {
         console.error('Error processing log message:', error);
       }

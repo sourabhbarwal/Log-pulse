@@ -11,6 +11,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 interface Notification {
   timestamp: string;
@@ -32,6 +33,9 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
   notifications,
   onClear 
 }) => {
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-[400px] sm:w-[500px] p-0 border-l border-border bg-[#F8F9F9]">
@@ -42,7 +46,7 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
                 <AlertCircle className="w-4 h-4 text-rose-500" />
                 Error History
               </SheetTitle>
-              {notifications.length > 0 && (
+              {notifications.length > 0 && isAdmin && (
                 <Button 
                   variant="ghost" 
                   size="sm" 

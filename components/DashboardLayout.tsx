@@ -11,22 +11,39 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import NotificationPanel from "./NotificationPanel";
+import { useSession, signOut } from "next-auth/react";
+import { LogOut } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
   notifications?: any[];
   onClearNotifications?: () => void;
+  onSearch?: (query: string) => void;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
   children, 
   notifications = [], 
-  onClearNotifications 
+  onClearNotifications,
+  onSearch
 }) => {
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const { data: session } = useSession();
+
+  const userInitials = session?.user?.name
+    ? session.user.name.split(" ").map((n) => n[0]).join("")
+    : "??";
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#FDFDFD] text-foreground overflow-hidden font-sans relative">
+      {/* Premium Background Effects */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px]" />
+      </div>
+
       {/* Navigation Rail */}
       <aside className="w-16 flex flex-col items-center py-6 border-r border-border bg-[#F8F9F9]">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-10 shadow-sm">
@@ -70,17 +87,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               <input 
                 type="text" 
                 placeholder="Global Search..." 
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  onSearch?.(e.target.value);
+                }}
                 className="bg-[#F1F3F3] border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-1 focus:ring-primary/20 transition-all outline-none"
               />
             </div>
-            <div className="w-8 h-8 rounded-full bg-secondary/20 border border-border flex items-center justify-center text-[10px] font-bold text-secondary-foreground">
-              JS
+            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-bold text-primary shadow-sm overflow-hidden">
+              {session?.user?.image ? (
+                <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
+              ) : (
+                userInitials
+              )}
             </div>
+            <button 
+              onClick={() => signOut()}
+              className="p-2 hover:bg-rose-50 rounded-xl text-muted-foreground hover:text-rose-600 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut size={18} />
+            </button>
           </div>
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 p-8 overflow-y-auto custom-scrollbar relative z-10">
           {children}
         </div>
 

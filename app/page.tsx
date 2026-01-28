@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const { logs, notifications, clearNotifications, isConnected } = useSocket();
   const [chartData, setChartData] = useState<{ time: string; count: number }[]>([]);
+  const [searchResults, setSearchResults] = useState<any[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Update chart data based on logs
   useEffect(() => {
@@ -22,10 +24,35 @@ export default function Home() {
     });
   }, [logs]);
 
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults(null);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(`/api/logs/search?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSearchResults(data);
+      }
+    } catch (error) {
+      console.error("Search failed:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   const errorCount = logs.filter(l => l.level === "ERROR").length;
 
   return (
-    <DashboardLayout notifications={notifications} onClearNotifications={clearNotifications}>
+    <DashboardLayout 
+      notifications={notifications} 
+      onClearNotifications={clearNotifications}
+      onSearch={handleSearch}
+    >
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between mb-2">
           <div>
@@ -44,7 +71,11 @@ export default function Home() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <LogFeed logs={logs} />
+            <LogFeed 
+              logs={searchResults || logs} 
+              title={searchResults ? `Search Results (${searchResults.length})` : "Live Stream"}
+              isSearching={isSearching}
+            />
           </div>
           <div className="space-y-6">
             <div className="p-6 bg-white border border-border rounded-2xl">
