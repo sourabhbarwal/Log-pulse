@@ -1,10 +1,13 @@
+import { NextResponse } from "next/server";
 import { auth } from "./auth";
 
-export default auth((req) => {
+export default auth(async (req) => {
   const isLoggedIn = !!req.auth;
   const isLoginPage = req.nextUrl.pathname === "/login";
+  const isApiRoute = req.nextUrl.pathname.startsWith("/api");
 
-  if (!isLoggedIn && !isLoginPage) {
+  // Auth Protection
+  if (!isLoggedIn && !isLoginPage && !req.nextUrl.pathname.startsWith("/api/auth")) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     return Response.redirect(loginUrl);
   }
@@ -13,8 +16,19 @@ export default auth((req) => {
     const dashboardUrl = new URL("/", req.nextUrl.origin);
     return Response.redirect(dashboardUrl);
   }
+
+  // Basic API Rate Limiting (Conceptual for Demo)
+  // In a real Edge environment, we'd use Upstash or a similar REST Redis client.
+  // For now, we'll allow all requests but structure it for future integration.
+  if (isApiRoute && !req.nextUrl.pathname.startsWith("/api/auth") && !req.nextUrl.pathname.startsWith("/api/health")) {
+    // Add rate limiting header for demonstration
+    const response = NextResponse.next();
+    response.headers.set('X-RateLimit-Limit', '100');
+    response.headers.set('X-RateLimit-Remaining', '99');
+    return response;
+  }
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };

@@ -22,6 +22,11 @@ interface LogFeedProps {
 
 const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearching = false }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [filter, setFilter] = React.useState<"ALL" | "INFO" | "WARN" | "ERROR">("ALL");
+
+  const filteredLogs = filter === "ALL" 
+    ? logs 
+    : logs.filter(l => l.level === filter);
 
   // Auto-scroll to top when new logs arrive if we are at the top
   useEffect(() => {
@@ -33,14 +38,32 @@ const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearch
   return (
     <div className="flex flex-col h-[500px] border border-border rounded-2xl bg-white dark:bg-[#111113] overflow-hidden shadow-sm">
       <div className="px-6 py-4 border-b border-border bg-background/50 dark:bg-slate-900/50 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-[#4A4A2C] uppercase tracking-wider flex items-center gap-2">
-          {!isSearching && title === "Live Stream" && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
-          {isSearching ? "Searching..." : title}
-        </h2>
+        <div className="flex items-center gap-4">
+          <div className="flex p-1 bg-[#F1F3F3] dark:bg-slate-800 rounded-lg">
+            {["ALL", "INFO", "WARN", "ERROR"].map((lv) => (
+              <button
+                key={lv}
+                onClick={() => setFilter(lv as any)}
+                className={cn(
+                  "px-3 py-1 text-[9px] font-bold uppercase tracking-widest rounded-md transition-all cursor-pointer",
+                  filter === lv 
+                    ? "bg-white dark:bg-slate-700 text-primary shadow-sm" 
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {lv}
+              </button>
+            ))}
+          </div>
+          <h2 className="text-sm font-semibold text-[#4A4A2C] uppercase tracking-wider flex items-center gap-2">
+            {!isSearching && title === "Live Stream" && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />}
+            {isSearching ? "Searching..." : title}
+          </h2>
+        </div>
         <div className="flex gap-2">
           <button 
             onClick={() => window.open('/api/logs/export?format=csv', '_blank')}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-muted-foreground hover:text-primary transition-all flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-muted-foreground hover:text-primary transition-all flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
             title="Export CSV"
           >
             <Download size={14} />
@@ -48,7 +71,7 @@ const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearch
           </button>
           <button 
             onClick={() => window.open('/api/logs/export?format=json', '_blank')}
-            className="p-1.5 hover:bg-slate-100 rounded-lg text-muted-foreground hover:text-primary transition-all flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider"
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-muted-foreground hover:text-primary transition-all flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
             title="Export JSON"
           >
             <Download size={14} />
@@ -60,12 +83,12 @@ const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearch
       <ScrollArea className="flex-1 px-6 py-4">
         <div className="space-y-3">
           <AnimatePresence initial={false}>
-            {logs.length === 0 ? (
+            {filteredLogs.length === 0 ? (
               <div className="h-40 flex items-center justify-center text-muted-foreground text-sm italic">
                 {isSearching ? "Querying database..." : "No logs found matching your query."}
               </div>
             ) : (
-              logs.map((log, index) => (
+              filteredLogs.map((log, index) => (
                 <motion.div
                   key={`${log.timestamp}-${index}`}
                   initial={{ opacity: 0, y: 10 }}

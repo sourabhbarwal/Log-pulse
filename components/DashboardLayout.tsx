@@ -20,17 +20,26 @@ interface DashboardLayoutProps {
   notifications?: any[];
   onClearNotifications?: () => void;
   onSearch?: (query: string) => void;
+  activeView?: "dashboard" | "logs" | "settings";
+  onViewChange?: (view: "dashboard" | "logs" | "settings") => void;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
   children, 
   notifications = [], 
   onClearNotifications,
-  onSearch
+  onSearch,
+  activeView = "dashboard",
+  onViewChange
 }) => {
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [lastReadTime, setLastReadTime] = React.useState<number>(0);
   const { data: session } = useSession();
+
+  const unreadCount = notifications.filter(
+    (n) => new Date(n.timestamp).getTime() > lastReadTime
+  ).length;
 
   const userInitials = session?.user?.name
     ? session.user.name.split(" ").map((n) => n[0]).join("")
@@ -52,15 +61,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </div>
         
         <nav className="flex-1 flex flex-col gap-8">
-          <NavItem icon={<LayoutDashboard size={20} />} active onClick={() => window.location.href = '/'} />
-          <NavItem icon={<FileText size={20} />} onClick={() => window.open('/api/logs/export?format=json', '_blank')} />
+          <NavItem 
+            icon={<LayoutDashboard size={20} />} 
+            active={activeView === "dashboard"} 
+            onClick={() => onViewChange?.("dashboard")} 
+            title="Dashboard Overview"
+          />
+          <NavItem 
+            icon={<FileText size={20} />} 
+            active={activeView === "logs"} 
+            onClick={() => onViewChange?.("logs")} 
+            title="Categorized Logs & History"
+          />
           <NavItem 
             icon={
               <div className="relative">
                 <Bell size={20} />
-                {notifications.length > 0 && (
+                {unreadCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-[#F8F9F9] dark:border-[#111113]">
-                    {notifications.length}
+                    {unreadCount}
                   </span>
                 )}
               </div>
@@ -70,7 +89,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         </nav>
         
         <div className="mt-auto">
-          <NavItem icon={<Settings size={20} />} onClick={() => alert("Settings configuration coming soon in Phase 13!")} />
+          <NavItem 
+            icon={<Settings size={20} />} 
+            active={activeView === "settings"}
+            onClick={() => window.location.href = '/health'} 
+            title="System Health & Settings"
+          />
         </div>
       </aside>
 
@@ -108,7 +132,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
             <button 
               onClick={() => signOut()}
-              className="p-2 hover:bg-rose-50 rounded-xl text-muted-foreground hover:text-rose-600 transition-colors"
+              className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-muted-foreground hover:text-rose-600 transition-colors cursor-pointer"
               title="Sign Out"
             >
               <LogOut size={18} />
@@ -126,6 +150,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           onOpenChange={setIsNotifOpen} 
           notifications={notifications}
           onClear={onClearNotifications}
+          onAcknowledge={() => {
+            setLastReadTime(Date.now());
+            setIsNotifOpen(false);
+          }}
         />
       </main>
     </div>
@@ -135,14 +163,17 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 const NavItem = ({ 
   icon, 
   active = false, 
-  onClick 
+  onClick,
+  title
 }: { 
   icon: React.ReactNode; 
   active?: boolean;
   onClick?: () => void;
+  title?: string;
 }) => (
   <button 
     onClick={onClick}
+    title={title}
     className={cn(
       "p-2.5 rounded-xl transition-all duration-200 cursor-pointer",
       active 

@@ -19,11 +19,24 @@ interface KPICardProps {
 }
 
 const KPICard: React.FC<KPICardProps> = ({ label, value, icon, trend, trendType = "neutral" }) => (
-  <Card className="p-5 border-border shadow-none bg-white dark:bg-[#111113] hover:border-primary/30 dark:hover:border-primary/50 transition-colors group">
+  <Card className="p-5 border-border shadow-none bg-white dark:bg-[#111113] hover:border-primary/30 dark:hover:border-primary/50 transition-colors group cursor-pointer">
     <div className="flex items-start justify-between">
       <div className="space-y-1.5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
         <h3 className="text-2xl font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tighter">{value}</h3>
+        {/* The button was placed here based on the instruction's context, assuming it's a separate element within the same div */}
+        {/* Note: The original instruction snippet for the button was incomplete and syntactically incorrect.
+            This is an interpretation to make it a valid React component.
+            If the button is only for specific cards, conditional rendering might be needed. */}
+        {label === "Total Ingestion" && ( // Example: only show for "Total Ingestion" card
+          <button
+            onClick={() => window.open('/api/logs/export?format=csv', '_blank')}
+            className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-muted-foreground hover:text-primary transition-all flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+            title="Export CSV"
+          >
+            Export CSV
+          </button>
+        )}
       </div>
       <div className="p-2.5 bg-background dark:bg-slate-800 rounded-lg text-primary group-hover:scale-110 transition-transform duration-300">
         {icon}

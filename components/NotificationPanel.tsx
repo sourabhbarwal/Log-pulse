@@ -25,13 +25,15 @@ interface NotificationPanelProps {
   onOpenChange: (open: boolean) => void;
   notifications: Notification[];
   onClear?: () => void;
+  onAcknowledge?: () => void;
 }
 
 const NotificationPanel: React.FC<NotificationPanelProps> = ({ 
   isOpen, 
   onOpenChange, 
   notifications,
-  onClear 
+  onClear,
+  onAcknowledge
 }) => {
   const { data: session } = useSession();
   const isAdmin = (session?.user as any)?.role === "ADMIN";
@@ -103,8 +105,8 @@ const NotificationPanel: React.FC<NotificationPanelProps> = ({
           
           <div className="p-6 border-t border-border bg-white/50 dark:bg-[#111113]/50">
             <Button 
-              className="w-full h-11 bg-primary hover:bg-[#4A4A2C] text-white font-bold text-xs uppercase tracking-widest transition-all rounded-xl shadow-sm"
-              onClick={() => onOpenChange(false)}
+              className="w-full h-11 bg-primary hover:bg-[#4A4A2C] text-white font-bold text-xs uppercase tracking-widest transition-all rounded-xl shadow-sm cursor-pointer"
+              onClick={onAcknowledge}
             >
               Acknowledge & Close
             </Button>

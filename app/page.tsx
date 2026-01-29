@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import KPIRibbon from "@/components/KPIRibbon";
 import LogFeed from "@/components/LogFeed";
 import LogTrendChart from "@/components/LogTrendChart";
+import LogsView from "@/components/LogsView";
 import { useEffect, useState } from "react";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [widgetOrder, setWidgetOrder] = useState<string[]>(["feed", "side"]);
+  const [activeView, setActiveView] = useState<"dashboard" | "logs" | "settings">("dashboard");
 
   // Update chart data based on logs
   useEffect(() => {
@@ -53,56 +55,67 @@ export default function Home() {
       notifications={notifications} 
       onClearNotifications={clearNotifications}
       onSearch={handleSearch}
+      activeView={activeView}
+      onViewChange={setActiveView}
     >
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h2 className="text-2xl font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight">System Overview</h2>
-            <p className="text-sm text-muted-foreground">Monitoring active log streams across nodes.</p>
-          </div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setWidgetOrder(prev => [...prev].reverse())}
-              className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-opacity px-3 py-1.5 rounded-lg border border-primary/20 bg-primary/5"
-            >
-              Flip Layout
-            </button>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {isConnected ? "Linked to Server" : "Disconnected"}
-              </span>
+      {activeView === "dashboard" ? (
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h2 className="text-2xl font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight">System Overview</h2>
+              <p className="text-sm text-muted-foreground">Monitoring active log streams across nodes.</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setWidgetOrder(prev => [...prev].reverse())}
+                className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-70 transition-opacity px-3 py-1.5 rounded-lg border border-primary/20 bg-primary/5 cursor-pointer"
+              >
+                Flip Layout
+              </button>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 border border-border">
+                <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  {isConnected ? "Linked to Server" : "Disconnected"}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <KPIRibbon logsCount={logs.length} errorRate={errorCount.toString()} />
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {widgetOrder.map((widget) => (
-            widget === "feed" ? (
-              <div key="feed" className="lg:col-span-2">
-                <LogFeed 
-                  logs={searchResults || logs} 
-                  title={searchResults ? `Search Results (${searchResults.length})` : "Live Stream"}
-                  isSearching={isSearching}
-                />
-              </div>
-            ) : (
-              <div key="side" className="space-y-6">
-                <div className="p-6 bg-white dark:bg-[#111113] border border-border rounded-2xl">
-                  <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">AI Observations</h3>
-                  <p className="text-sm text-[#616164] dark:text-[#A1A1A5] leading-relaxed">
-                    Log ingestion patterns are currently <span className="text-primary font-bold">Optimal</span>.
-                    No abnormal spikes detected in error rates over the last 15 minutes.
-                  </p>
+          <KPIRibbon logsCount={logs.length} errorRate={errorCount.toString()} />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {widgetOrder.map((widget) => (
+              widget === "feed" ? (
+                <div key="feed" className="lg:col-span-2">
+                  <LogFeed 
+                    logs={searchResults || logs} 
+                    title={searchResults ? `Search Results (${searchResults.length})` : "Live Stream"}
+                    isSearching={isSearching}
+                  />
                 </div>
-                <LogTrendChart data={chartData} />
-              </div>
-            )
-          ))}
+              ) : (
+                <div key="side" className="space-y-6">
+                  <div className="p-6 bg-white dark:bg-[#111113] border border-border rounded-2xl">
+                    <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">AI Observations</h3>
+                    <p className="text-sm text-[#616164] dark:text-[#A1A1A5] leading-relaxed">
+                      Log ingestion patterns are currently <span className="text-primary font-bold">Optimal</span>.
+                      No abnormal spikes detected in error rates over the last 15 minutes.
+                    </p>
+                  </div>
+                  <LogTrendChart data={chartData} />
+                </div>
+              )
+            ))}
+          </div>
         </div>
-      </div>
+      ) : activeView === "logs" ? (
+        <LogsView logs={logs} />
+      ) : (
+        <div className="h-[60vh] flex flex-col items-center justify-center text-center">
+           <h2 className="text-xl font-bold text-primary uppercase tracking-widest">Settings</h2>
+           <p className="text-muted-foreground mt-2">Configuration and node management tools are being prepared.</p>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
