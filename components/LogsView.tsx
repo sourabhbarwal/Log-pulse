@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface Log {
   timestamp: string;
@@ -31,6 +32,8 @@ interface LogsViewProps {
 }
 
 const LogsView: React.FC<LogsViewProps> = ({ logs }) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const [levelFilter, setLevelFilter] = React.useState<string>("ALL");
   const [sourceFilter, setSourceFilter] = React.useState<string>("");
 
@@ -90,8 +93,8 @@ const LogsView: React.FC<LogsViewProps> = ({ logs }) => {
                 <Tooltip 
                    contentStyle={{ 
                     borderRadius: '12px', 
-                    border: '1px solid #B4B4B4', 
-                    backgroundColor: 'var(--tooltip-bg, #fff)',
+                    border: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0', 
+                    backgroundColor: isDark ? '#111113' : '#fff',
                     fontSize: '11px'
                   }} 
                 />
@@ -121,15 +124,15 @@ const LogsView: React.FC<LogsViewProps> = ({ logs }) => {
                   type="category" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fontSize: 10, fill: "#B4B4B4" }}
+                  tick={{ fontSize: 10, fill: isDark ? "#64748b" : "#94a3b8" }}
                   width={80}
                 />
                 <Tooltip 
                   cursor={{ fill: 'transparent' }}
                   contentStyle={{ 
                     borderRadius: '12px', 
-                    border: '1px solid #B4B4B4', 
-                    backgroundColor: 'var(--tooltip-bg, #fff)',
+                    border: isDark ? '1px solid #1e293b' : '1px solid #e2e8f0', 
+                    backgroundColor: isDark ? '#111113' : '#fff',
                     fontSize: '11px'
                   }} 
                 />

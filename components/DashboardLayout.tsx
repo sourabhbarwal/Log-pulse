@@ -56,7 +56,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Navigation Rail */}
       <aside className="w-16 flex flex-col items-center py-6 border-r border-border bg-[#F8F9F9] dark:bg-[#111113]">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-10 shadow-sm">
+        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-10 shadow-sm border border-primary/20">
           <Activity className="text-white w-6 h-6" />
         </div>
         
@@ -103,7 +103,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         {/* Header */}
         <header className="h-16 border-b border-border flex items-center justify-between px-8 bg-white/50 dark:bg-[#0A0A0B]/50 backdrop-blur-sm">
           <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight uppercase">LogPulse <span className="text-[#A09C5E] font-normal lowercase opacity-70">/ real-time monitoring</span></h1>
+            <h1 className="text-lg font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight uppercase">
+              LogPulse 
+              <span className="text-primary font-light lowercase opacity-80 text-xs ml-2">/ real-time monitoring</span>
+            </h1>
           </div>
           
           <div className="flex items-center gap-6">
