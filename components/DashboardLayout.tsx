@@ -7,7 +7,8 @@ import {
   Settings, 
   FileText, 
   Search,
-  Bell
+  Bell,
+  Server
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import NotificationPanel from "./NotificationPanel";
@@ -63,15 +64,33 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <nav className="flex-1 flex flex-col gap-8">
           <NavItem 
             icon={<LayoutDashboard size={20} />} 
-            active={activeView === "dashboard"} 
-            onClick={() => onViewChange?.("dashboard")} 
-            title="Dashboard Overview"
+            active={activeView === "dashboard"}
+            onClick={() => {
+              if (window.location.pathname !== '/') {
+                window.location.href = '/';
+              } else {
+                onViewChange?.("dashboard");
+              }
+            }} 
+            title="Overview"
           />
           <NavItem 
             icon={<FileText size={20} />} 
-            active={activeView === "logs"} 
-            onClick={() => onViewChange?.("logs")} 
-            title="Categorized Logs & History"
+            active={activeView === "logs"}
+            onClick={() => {
+              if (window.location.pathname !== '/') {
+                window.location.href = '/?view=logs';
+              } else {
+                onViewChange?.("logs");
+              }
+            }} 
+            title="Global Logs"
+          />
+          <NavItem 
+            icon={<Server size={20} />} 
+            active={window.location.pathname === '/nodes'}
+            onClick={() => window.location.href = '/nodes'} 
+            title="Server Fleet"
           />
           <NavItem 
             icon={

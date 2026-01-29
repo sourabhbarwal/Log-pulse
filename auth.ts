@@ -12,9 +12,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // For demo purposes: admin/admin123
         if (credentials?.username === "admin" && credentials?.password === "admin123") {
-          return { id: "1", name: "Admin User", email: "admin@logpulse.dev", role: "ADMIN" };
+          return { id: "1", name: "Recruiter Admin", email: "recruitment@logpulse.dev", role: "OWNER" };
+        }
+        if (credentials?.username === "viewer" && credentials?.password === "viewer123") {
+          return { id: "2", name: "Guest Viewer", email: "guest@demo.com", role: "VIEWER" };
         }
         return null;
       },

@@ -4,6 +4,8 @@ import { Activity, Github, Lock, User } from "lucide-react";
 import { signIn } from "next-auth/react";
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { cn } from "@/lib/utils";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -22,25 +24,29 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFDFD] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-[#FDFDFD] dark:bg-[#0A0A0B] flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-500">
+      {/* Theme Toggle Positioned Top Right */}
+      <div className="absolute top-6 right-8 z-50">
+        <ThemeToggle />
+      </div>
       {/* Background Polish */}
-      <div className="absolute inset-0 z-0 opacity-40">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px]" />
+      <div className="absolute inset-0 z-0 opacity-40 dark:opacity-20">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] dark:bg-[size:48px_48px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/5 dark:bg-primary/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 dark:bg-secondary/10 blur-[120px]" />
       </div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white border border-border shadow-xl rounded-3xl p-8 relative z-10"
+        className="w-full max-w-md bg-white dark:bg-[#111113] border border-border/60 dark:border-border shadow-2xl rounded-3xl p-8 relative z-10"
       >
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
             <Activity className="text-white w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">LogPulse Access</h1>
-          <p className="text-sm text-muted-foreground mt-2">Enter credentials to view secure log streams</p>
+          <h1 className="text-2xl font-bold text-foreground dark:text-[#E2E2D1] tracking-tight">LogPulse Access</h1>
+          <p className="text-sm text-muted-foreground mt-2 font-medium">Enter credentials to view secure log streams</p>
         </div>
 
         <form onSubmit={handleCredentialsLogin} className="space-y-4">
@@ -53,7 +59,7 @@ export default function LoginPage() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="admin"
-                className="w-full bg-[#F1F3F3] border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                className="w-full bg-[#F1F3F3] dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/30 transition-all outline-none text-foreground dark:text-[#E2E2D1]"
                 required
               />
             </div>
@@ -68,7 +74,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-[#F1F3F3] border-none rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none"
+                className="w-full bg-[#F1F3F3] dark:bg-slate-900 border border-transparent dark:border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 dark:focus:ring-primary/30 transition-all outline-none text-foreground dark:text-[#E2E2D1]"
                 required
               />
             </div>
@@ -85,14 +91,14 @@ export default function LoginPage() {
 
         <div className="relative my-8 text-center">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
+            <div className="w-full border-t border-border dark:border-slate-800"></div>
           </div>
-          <span className="bg-white px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] relative">Alternatively</span>
+          <span className="bg-white dark:bg-[#111113] px-4 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] relative">Alternatively</span>
         </div>
 
         <button 
           onClick={() => signIn("github", { callbackUrl: "/" })}
-          className="w-full bg-foreground text-background font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+          className="w-full bg-foreground dark:bg-slate-800 text-background dark:text-foreground font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 dark:hover:bg-slate-700 transition-all border border-transparent dark:border-slate-700"
         >
           <Github className="w-5 h-5" />
           Continue with GitHub
