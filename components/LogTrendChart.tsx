@@ -20,7 +20,7 @@ interface ChartData {
 
 const LogTrendChart: React.FC<{ data: ChartData[] }> = ({ data }) => {
   return (
-    <div className="h-[300px] w-full mt-8 p-6 bg-white border border-border rounded-2xl shadow-sm">
+    <div className="h-[300px] w-full mt-8 p-6 bg-white dark:bg-[#111113] border border-border rounded-2xl shadow-sm">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-1">Ingestion Frequency</h3>
         <div className="flex items-center gap-3">
@@ -39,7 +39,7 @@ const LogTrendChart: React.FC<{ data: ChartData[] }> = ({ data }) => {
               <stop offset="95%" stopColor="#A09C5E" stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="#F1F3F3" />
+          <CartesianGrid vertical={false} stroke="currentColor" className="text-[#F1F3F3] dark:text-slate-800" />
           <XAxis 
             dataKey="time" 
             axisLine={false} 
@@ -56,10 +56,12 @@ const LogTrendChart: React.FC<{ data: ChartData[] }> = ({ data }) => {
             contentStyle={{ 
               borderRadius: '12px', 
               border: '1px solid #B4B4B4', 
+              backgroundColor: 'var(--tooltip-bg, #fff)',
               boxShadow: 'none',
               fontSize: '11px',
               fontFamily: 'inherit'
             }} 
+            itemStyle={{ color: 'inherit' }}
           />
           <Area 
             type="monotone" 

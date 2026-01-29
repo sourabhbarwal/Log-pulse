@@ -19,13 +19,13 @@ interface KPICardProps {
 }
 
 const KPICard: React.FC<KPICardProps> = ({ label, value, icon, trend, trendType = "neutral" }) => (
-  <Card className="p-5 border-border shadow-none bg-white hover:border-primary/30 transition-colors group">
+  <Card className="p-5 border-border shadow-none bg-white dark:bg-[#111113] hover:border-primary/30 dark:hover:border-primary/50 transition-colors group">
     <div className="flex items-start justify-between">
       <div className="space-y-1.5">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
-        <h3 className="text-2xl font-bold text-[#4A4A2C] tracking-tighter">{value}</h3>
+        <h3 className="text-2xl font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tighter">{value}</h3>
       </div>
-      <div className="p-2.5 bg-background rounded-lg text-primary group-hover:scale-110 transition-transform duration-300">
+      <div className="p-2.5 bg-background dark:bg-slate-800 rounded-lg text-primary group-hover:scale-110 transition-transform duration-300">
         {icon}
       </div>
     </div>
@@ -33,9 +33,9 @@ const KPICard: React.FC<KPICardProps> = ({ label, value, icon, trend, trendType 
       <div className="mt-4 flex items-center gap-2">
         <span className={cn(
           "text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase",
-          trendType === "positive" && "bg-emerald-50 text-emerald-600",
-          trendType === "negative" && "bg-rose-50 text-rose-600",
-          trendType === "neutral" && "bg-blue-50 text-blue-600"
+          trendType === "positive" && "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+          trendType === "negative" && "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400",
+          trendType === "neutral" && "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
         )}>
           {trend}
         </span>
