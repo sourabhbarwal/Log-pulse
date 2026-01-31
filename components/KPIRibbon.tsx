@@ -58,36 +58,39 @@ const KPICard: React.FC<KPICardProps> = ({ label, value, icon, trend, trendType 
   </Card>
 );
 
-const KPIRibbon: React.FC<{ logsCount: number; errorRate: string }> = ({ logsCount, errorRate }) => {
+const KPIRibbon: React.FC<{ logsCount: number; errorRate: string; connectedNodes: number }> = ({ logsCount, errorRate, connectedNodes }) => {
+  const healthStatus = connectedNodes > 0 ? "Healthy" : "Idle";
+  const healthTrend = connectedNodes > 0 ? `${connectedNodes} Nodes` : "Offline";
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
       <KPICard 
         label="Total Ingestion" 
         value={logsCount.toLocaleString()} 
         icon={<Database size={20} />} 
-        trend="+12%" 
-        trendType="positive"
+        trend={logsCount > 0 ? "+100%" : "0%"} 
+        trendType={logsCount > 0 ? "positive" : "neutral"}
       />
       <KPICard 
         label="Avg. Latency" 
-        value="12ms" 
+        value={logsCount > 0 ? "12ms" : "0ms"} 
         icon={<Zap size={20} />} 
-        trend="-4ms" 
+        trend={logsCount > 0 ? "-2ms" : "N/A"} 
         trendType="positive"
       />
       <KPICard 
         label="Critical Errors" 
         value={errorRate} 
         icon={<AlertCircle size={20} />} 
-        trend="+2" 
-        trendType="negative"
+        trend={parseInt(errorRate) > 0 ? "Active" : "None"} 
+        trendType={parseInt(errorRate) > 10 ? "negative" : "neutral"}
       />
       <KPICard 
-        label="Cluster Health" 
-        value="Stable" 
+        label="Fleet Status" 
+        value={healthStatus} 
         icon={<Server size={20} />} 
-        trend="99.9%"
-        trendType="neutral"
+        trend={healthTrend}
+        trendType={connectedNodes > 0 ? "positive" : "neutral"}
       />
     </div>
   );

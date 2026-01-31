@@ -6,8 +6,8 @@ export default auth(async (req) => {
   const isLoginPage = req.nextUrl.pathname === "/login";
   const isApiRoute = req.nextUrl.pathname.startsWith("/api");
 
-  // Auth Protection
-  if (!isLoggedIn && !isLoginPage && !req.nextUrl.pathname.startsWith("/api/auth")) {
+  // Auth Protection: Allow auth internals and the external ingestion endpoint
+  if (!isLoggedIn && !isLoginPage && !req.nextUrl.pathname.startsWith("/api/auth") && !req.nextUrl.pathname.startsWith("/api/logs/ingest")) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     return Response.redirect(loginUrl);
   }

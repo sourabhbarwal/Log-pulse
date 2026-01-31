@@ -19,7 +19,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid or inactive API Key" }, { status: 401 });
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return NextResponse.json({ error: "Malformed JSON body" }, { status: 400 });
+    }
     const { level, message, details } = body;
 
     if (!level || !message) {
