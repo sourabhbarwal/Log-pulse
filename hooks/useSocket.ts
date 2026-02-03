@@ -11,6 +11,21 @@ export const useSocket = () => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    // Initial fetch for historical logs (last 48h)
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch("/api/logs");
+        if (res.ok) {
+          const history = await res.json();
+          setLogs(history);
+        }
+      } catch (err) {
+        console.error("Failed to load history:", err);
+      }
+    };
+    
+    fetchHistory();
+
     const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
     socketInstance.on('connect', () => {

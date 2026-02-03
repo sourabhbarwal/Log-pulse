@@ -6,6 +6,7 @@ export interface ILog extends Document {
   message: string;
   source?: string;
   metadata?: Record<string, any>;
+  owner: string; // User ID or email
 }
 
 const LogSchema: Schema = new Schema({
@@ -15,6 +16,7 @@ const LogSchema: Schema = new Schema({
   source: { type: String },
   metadata: { type: Schema.Types.Mixed },
   fingerprint: { type: String, index: true },
+  owner: { type: String, required: true, index: true },
 });
 
 // Create a text index for full-text search

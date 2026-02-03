@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       message,
       source: node.name,
       timestamp: new Date().toISOString(),
+      owner: node.owner,
       details: details || {}
     };
 

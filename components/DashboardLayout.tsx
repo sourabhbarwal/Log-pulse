@@ -34,6 +34,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   onViewChange
 }) => {
   const [isNotifOpen, setIsNotifOpen] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastReadTime, setLastReadTime] = React.useState<number>(0);
   const { data: session } = useSession();
@@ -43,7 +44,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   ).length;
 
   const userInitials = session?.user?.name
-    ? session.user.name.split(" ").map((n) => n[0]).join("")
+    ? session.user.name
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
     : "??";
 
   return (
@@ -55,8 +62,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px]" />
       </div>
 
-      {/* Navigation Rail */}
-      <aside className="w-16 flex flex-col items-center py-6 border-r border-border bg-[#F8F9F9] dark:bg-[#111113]">
+      {/* Navigation Rail - Hidden on mobile, shown on md+ */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 z-50 w-16 flex flex-col items-center py-6 border-r border-border bg-[#F8F9F9] dark:bg-[#111113] transition-transform duration-300 md:static md:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-10 shadow-sm border border-primary/20">
           <Activity className="text-white w-6 h-6" />
         </div>
@@ -121,15 +131,21 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="h-16 border-b border-border flex items-center justify-between px-8 bg-white/50 dark:bg-[#0A0A0B]/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight uppercase">
+          <div className="flex items-center gap-2 md:gap-4">
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 md:hidden text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Activity className="w-6 h-6" />
+            </button>
+            <h1 className="text-sm md:text-lg font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight uppercase truncate max-w-[120px] md:max-w-none">
               LogPulse 
-              <span className="text-primary font-light lowercase opacity-80 text-xs ml-2">/ real-time monitoring</span>
+              <span className="hidden sm:inline text-primary font-light lowercase opacity-80 text-xs ml-2">/ real-time monitoring</span>
             </h1>
           </div>
           
-          <div className="flex items-center gap-6">
-            <div className="relative group">
+          <div className="flex items-center gap-3 md:gap-6">
+            <div className="relative group hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <input 
                 type="text" 
@@ -139,13 +155,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   setSearchQuery(e.target.value);
                   onSearch?.(e.target.value);
                 }}
-                className="bg-[#F1F3F3] dark:bg-slate-800 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-1 focus:ring-primary/20 transition-all outline-none"
+                className="bg-[#F1F3F3] dark:bg-slate-800 border-none rounded-full py-2 pl-10 pr-4 text-xs md:text-sm w-32 md:w-64 focus:ring-1 focus:ring-primary/20 transition-all outline-none"
               />
             </div>
             
             <ThemeToggle />
 
-            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-bold text-primary shadow-sm overflow-hidden">
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] md:text-xs font-bold text-primary shadow-sm overflow-hidden flex-shrink-0">
               {session?.user?.image ? (
                 <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
               ) : (
@@ -154,7 +170,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             </div>
             <button 
               onClick={() => signOut()}
-              className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-muted-foreground hover:text-rose-600 transition-colors cursor-pointer"
+              className="p-1.5 md:p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-muted-foreground hover:text-rose-600 transition-colors cursor-pointer"
               title="Sign Out"
             >
               <LogOut size={18} />
