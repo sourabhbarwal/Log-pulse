@@ -13,6 +13,8 @@ export default function NodesPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [newNodeName, setNewNodeName] = useState("");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"curl" | "powershell">("curl");
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://your-domain.com';
 
   const fetchNodes = async () => {
     try {
@@ -208,36 +210,87 @@ export default function NodesPage() {
           )}
         </div>
 
-        {/* Developer Integration Card */}
         <Card className="p-10 bg-slate-900 border-none shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-10 opacity-10 group-hover:scale-110 transition-transform duration-1000">
             <Zap size={150} className="text-primary" />
           </div>
-          <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-primary">
-                <ShieldCheck size={20} />
-                <span className="text-xs font-black uppercase tracking-[0.2em]">Developer Quickstart</span>
+          <div className="relative z-10 flex flex-col xl:flex-row gap-10 items-start">
+            <div className="space-y-6 flex-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary">
+                <ShieldCheck size={14} />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em]">Developer Quickstart</span>
               </div>
-              <h3 className="text-3xl font-bold text-white tracking-tighter">Connect your fleet in seconds.</h3>
-              <p className="text-slate-400 text-sm leading-relaxed max-w-md">
-                Copy your API Key and send a POST request from any language. 
-                LogPulse handles the heavy lifting of high-throughput ingestion.
+              <h3 className="text-3xl font-bold text-white tracking-tighter leading-tight">Connect your fleet<br/>in seconds.</h3>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                LogPulse ingestion is language agnostic. Copy your server's API Key and use our standard JSON endpoint to start streaming instantly.
               </p>
+              
+              <div className="flex items-center gap-2 bg-black/40 p-1 rounded-lg w-fit border border-slate-800">
+                <button 
+                  onClick={() => setActiveTab("curl")}
+                  className={cn(
+                    "px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all",
+                    activeTab === "curl" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-500 hover:text-slate-300"
+                  )}
+                >
+                  cURL
+                </button>
+                <button 
+                  onClick={() => setActiveTab("powershell")}
+                  className={cn(
+                    "px-4 py-1.5 rounded-md text-[10px] font-black uppercase tracking-widest transition-all",
+                    activeTab === "powershell" ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-slate-500 hover:text-slate-300"
+                  )}
+                >
+                  PowerShell
+                </button>
+              </div>
             </div>
             
-            <div className="flex-1 w-full">
-              <div className="bg-black/50 rounded-2xl p-6 border border-slate-800 shadow-inner">
-                <pre className="text-[10px] md:text-xs text-emerald-400 font-mono overflow-x-auto">
-                  <code>{`curl -X POST https://your-domain.com/api/logs/ingest \\
-  -H "Content-Type: application/json" \\
-  -H "x-api-key: YOUR_API_KEY" \\
-  -d '{
+            <div className="flex-[1.5] w-full">
+              <div className="bg-black/60 rounded-2xl p-6 border border-slate-800 shadow-2xl backdrop-blur-xl relative group/code">
+                <div className="absolute top-4 right-4 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-rose-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-amber-500/50" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500/50" />
+                </div>
+                <pre className="text-[11px] md:text-xs text-emerald-400/90 font-mono overflow-x-auto min-h-[140px] flex items-center">
+                  <code className="w-full">
+                    {activeTab === "curl" ? (
+                      <>
+                        <span className="text-indigo-400">curl</span> -X <span className="text-amber-400">POST</span> {baseUrl}/api/logs/ingest \<br/>
+                        &nbsp;&nbsp;-H <span className="text-emerald-300">"Content-Type: application/json"</span> \<br/>
+                        &nbsp;&nbsp;-H <span className="text-emerald-300">"x-api-key: YOUR_API_KEY"</span> \<br/>
+                        &nbsp;&nbsp;-d <span className="text-slate-400">'{`{
     "level": "ERROR",
-    "message": "Payment system failed",
-    "details": { "node": "db-01" }
-  }'`}</code>
+    "message": "System failure detected",
+    "details": { "service": "api-gateway" }
+  }`}</span>'
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-indigo-400">Invoke-RestMethod</span> -Uri <span className="text-emerald-300">"{baseUrl}/api/logs/ingest"</span> `<br/>
+                        &nbsp;&nbsp;-Method <span className="text-amber-400">Post</span> `<br/>
+                        &nbsp;&nbsp;-Headers <span className="text-slate-300">@{"{"}</span>"x-api-key"=<span className="text-emerald-300">"YOUR_KEY"</span><span className="text-slate-300">{"}"}</span> `<br/>
+                        &nbsp;&nbsp;-ContentType <span className="text-emerald-300">"application/json"</span> `<br/>
+                        &nbsp;&nbsp;-Body <span className="text-slate-400">'{"{"}"level": "ERROR", "message": "Failure"{"}"}'</span>
+                      </>
+                    )}
+                  </code>
                 </pre>
+                
+                <button 
+                  onClick={() => {
+                    const text = activeTab === "curl" 
+                      ? `curl -X POST ${baseUrl}/api/logs/ingest -H "Content-Type: application/json" -H "x-api-key: YOUR_API_KEY" -d '{"level": "ERROR", "message": "System failure detected"}'`
+                      : `Invoke-RestMethod -Uri "${baseUrl}/api/logs/ingest" -Method Post -Headers @{"x-api-key"="YOUR_KEY"} -ContentType "application/json" -Body '{"level": "ERROR", "message": "System failure detected"}'`;
+                    navigator.clipboard.writeText(text);
+                    toast.success(`${activeTab === "curl" ? "cURL" : "PowerShell"} snippet copied!`);
+                  }}
+                  className="absolute bottom-4 right-4 p-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-lg transition-all opacity-0 group-hover/code:opacity-100"
+                >
+                  <Copy size={16} />
+                </button>
               </div>
             </div>
           </div>

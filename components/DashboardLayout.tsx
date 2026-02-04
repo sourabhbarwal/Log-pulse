@@ -17,7 +17,7 @@ import { LogOut } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Mail, Shield, ChevronRight } from "lucide-react";
+import { User, Mail, Shield, ChevronRight, Menu, X } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -70,18 +70,31 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/5 blur-[120px]" />
       </div>
 
+      {/* Mobile Backdrop Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[80] md:hidden"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Navigation Rail - Hidden on mobile, shown on md+ */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-16 flex flex-col items-center py-6 border-r border-border bg-[#F8F9F9] dark:bg-[#111113] transition-transform duration-300 md:static md:translate-x-0",
+        "fixed inset-y-0 left-0 z-[90] w-20 md:w-16 flex flex-col items-center py-6 border-r border-border bg-[#F8F9F9] dark:bg-[#111113] transition-transform duration-300 md:static md:translate-x-0",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mb-10 shadow-sm border border-primary/20">
           <Activity className="text-white w-6 h-6" />
         </div>
         
-        <nav className="flex-1 flex flex-col gap-8">
+        <nav className="flex-1 flex flex-col gap-8 w-full px-2">
           <NavItem 
-            icon={<LayoutDashboard size={20} />} 
+            icon={<LayoutDashboard size={24} />} 
             active={currentView === "dashboard" && pathname === '/'}
             onClick={() => {
               if (pathname !== '/') {
@@ -89,11 +102,13 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               } else {
                 onViewChange?.("dashboard");
               }
+              setIsMobileMenuOpen(false);
             }} 
             title="Overview"
+            label="Overview"
           />
           <NavItem 
-            icon={<FileText size={20} />} 
+            icon={<FileText size={24} />} 
             active={currentView === "logs" || (pathname === '/' && currentView === 'logs')}
             onClick={() => {
               if (pathname !== '/') {
@@ -101,19 +116,25 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               } else {
                 onViewChange?.("logs");
               }
+              setIsMobileMenuOpen(false);
             }} 
             title="Global Logs"
+            label="Logs"
           />
           <NavItem 
-            icon={<Server size={20} />} 
+            icon={<Server size={24} />} 
             active={pathname === '/nodes'}
-            onClick={() => router.push('/nodes')} 
+            onClick={() => {
+              router.push('/nodes');
+              setIsMobileMenuOpen(false);
+            }} 
             title="Server Fleet"
+            label="Fleet"
           />
           <NavItem 
             icon={
               <div className="relative">
-                <Bell size={20} />
+                <Bell size={24} />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-rose-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center border-2 border-[#F8F9F9] dark:border-[#111113]">
                     {unreadCount}
@@ -121,16 +142,24 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                 )}
               </div>
             } 
-            onClick={() => setIsNotifOpen(true)}
+            onClick={() => {
+              setIsNotifOpen(true);
+              setIsMobileMenuOpen(false);
+            }}
+            label="Alerts"
           />
         </nav>
         
-        <div className="mt-auto">
+        <div className="mt-auto w-full px-2">
           <NavItem 
-            icon={<Settings size={20} />} 
+            icon={<Settings size={24} />} 
             active={currentView === "settings" || pathname === '/health'}
-            onClick={() => router.push('/health')} 
+            onClick={() => {
+              router.push('/health');
+              setIsMobileMenuOpen(false);
+            }} 
             title="System Health & Settings"
+            label="Settings"
           />
         </div>
       </aside>
@@ -142,9 +171,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 md:hidden text-muted-foreground hover:text-primary transition-colors"
+              className="p-2 md:hidden text-muted-foreground hover:text-primary transition-all bg-primary/5 rounded-lg border border-primary/10"
+              aria-label="Toggle Menu"
             >
-              <Activity className="w-6 h-6" />
+              {isMobileMenuOpen ? <X size={20} className="text-primary" /> : <Menu size={20} />}
             </button>
             <h1 className="text-sm md:text-lg font-bold text-[#4A4A2C] dark:text-[#E2E2D1] tracking-tight uppercase truncate max-w-[120px] md:max-w-none">
               LogPulse 
@@ -271,24 +301,27 @@ const NavItem = ({
   icon, 
   active = false, 
   onClick,
-  title
+  title,
+  label
 }: { 
   icon: React.ReactNode; 
   active?: boolean;
   onClick?: () => void;
   title?: string;
+  label?: string;
 }) => (
   <button 
     onClick={onClick}
     title={title}
     className={cn(
-      "p-2.5 rounded-xl transition-all duration-200 cursor-pointer",
+      "w-full flex flex-col items-center gap-1 p-2.5 rounded-xl transition-all duration-200 cursor-pointer",
       active 
         ? "bg-primary/10 dark:bg-primary/20 text-primary shadow-sm ring-1 ring-primary/5 dark:ring-primary/20" 
         : "text-muted-foreground hover:bg-secondary/10 dark:hover:bg-slate-800 hover:text-foreground dark:hover:text-white"
     )}
   >
     {icon}
+    {label && <span className="text-[9px] font-bold uppercase tracking-tighter md:hidden">{label}</span>}
   </button>
 );
 
