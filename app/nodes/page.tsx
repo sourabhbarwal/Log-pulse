@@ -60,6 +60,36 @@ export default function NodesPage() {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
+  const toggleStatus = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "active" ? "paused" : "active";
+    try {
+      const res = await fetch("/api/nodes", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+      if (res.ok) {
+        setNodes(nodes.map(n => n._id === id ? { ...n, status: newStatus } : n));
+        toast.info(`Server ${newStatus === "active" ? "Activated" : "Paused"}`);
+      }
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const deleteNode = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this server? Historical logs will persist but future ingestion will fail.")) return;
+    try {
+      const res = await fetch(`/api/nodes?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setNodes(nodes.filter(n => n._id !== id));
+        toast.success("Server removed from fleet");
+      }
+    } catch (err) {
+      toast.error("Failed to delete server");
+    }
+  };
+
   return (
     <DashboardLayout activeView="settings">
       <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -131,6 +161,15 @@ export default function NodesPage() {
                           <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", node.status === "active" ? "bg-emerald-500" : "bg-amber-500")} />
                           {node.status}
                         </span>
+                        <button 
+                          onClick={() => toggleStatus(node._id, node.status)}
+                          className={cn(
+                            "ml-2 px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter transition-all",
+                            node.status === "active" ? "bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white" : "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500 hover:text-white"
+                          )}
+                        >
+                          {node.status === "active" ? "Pause Ingest" : "Resume Ingest"}
+                        </button>
                         <span className="text-[10px] text-muted-foreground font-mono">
                           Last ingestion: {node.lastIngestAt ? new Date(node.lastIngestAt).toLocaleTimeString() : "Never"}
                         </span>
@@ -156,7 +195,10 @@ export default function NodesPage() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <button className="p-2.5 text-muted-foreground hover:text-rose-500 transition-all cursor-pointer">
+                    <button 
+                      onClick={() => deleteNode(node._id)}
+                      className="p-2.5 text-muted-foreground hover:text-rose-500 transition-all cursor-pointer"
+                    >
                       <Trash2 size={18} />
                     </button>
                   </div>

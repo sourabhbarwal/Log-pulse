@@ -40,3 +40,55 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Failed to create node" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { id, status } = await req.json();
+    if (!id || !status) {
+      return NextResponse.json({ error: "Node ID and status are required" }, { status: 400 });
+    }
+
+    await dbConnect();
+    const node = await Node.findOneAndUpdate(
+      { _id: id, owner: session.user?.email },
+      { status },
+      { new: true }
+    );
+
+    if (!node) {
+      return NextResponse.json({ error: "Node not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json(node);
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to update node" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    
+    if (!id) {
+      return NextResponse.json({ error: "Node ID is required" }, { status: 400 });
+    }
+
+    await dbConnect();
+    const node = await Node.findOneAndDelete({ _id: id, owner: session.user?.email });
+
+    if (!node) {
+      return NextResponse.json({ error: "Node not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to delete node" }, { status: 500 });
+  }
+}

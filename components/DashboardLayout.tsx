@@ -16,6 +16,8 @@ import { useSession, signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Mail, Shield, ChevronRight } from "lucide-react";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -38,6 +40,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastReadTime, setLastReadTime] = React.useState<number>(0);
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false);
   const { data: session } = useSession();
   const pathname = usePathname();
   const router = useRouter();
@@ -135,7 +138,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-border flex items-center justify-between px-8 bg-white/50 dark:bg-[#0A0A0B]/50 backdrop-blur-sm">
+        <header className="h-16 border-b border-border flex items-center justify-between px-8 bg-white/50 dark:bg-[#0A0A0B]/50 backdrop-blur-sm relative z-[60]">
           <div className="flex items-center gap-2 md:gap-4">
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -166,20 +169,81 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             
             <ThemeToggle />
 
-            <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] md:text-xs font-bold text-primary shadow-sm overflow-hidden flex-shrink-0">
-              {session?.user?.image ? (
-                <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
-              ) : (
-                userInitials
-              )}
-            </div>
-            <button 
-              onClick={() => signOut()}
-              className="p-1.5 md:p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-xl text-muted-foreground hover:text-rose-600 transition-colors cursor-pointer"
-              title="Sign Out"
+            <div 
+              className="relative"
+              onMouseEnter={() => setIsProfileOpen(true)}
+              onMouseLeave={() => setIsProfileOpen(false)}
             >
-              <LogOut size={18} />
-            </button>
+              <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] md:text-xs font-bold text-primary shadow-sm overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all">
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt="User" className="w-full h-full object-cover" />
+                ) : (
+                  userInitials
+                )}
+              </div>
+
+              {/* Professional Profile Hover Card */}
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute top-full right-0 mt-3 w-72 z-[100]"
+                  >
+                    <div className="bg-white dark:bg-[#111113] border border-border rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/5">
+                      <div className="p-5 bg-primary/5 border-b border-border">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-white text-lg font-black shadow-lg shadow-primary/20">
+                            {userInitials}
+                          </div>
+                          <div className="overflow-hidden">
+                            <h4 className="font-bold text-[#4A4A2C] dark:text-[#E2E2D1] truncate">{session?.user?.name || "Anonymous"}</h4>
+                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black tabular-nums">
+                              {(session?.user as any)?.role || "ADMIN"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-2 space-y-1">
+                        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                          <Mail size={16} className="text-muted-foreground" />
+                          <div className="overflow-hidden">
+                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Email Address</p>
+                            <p className="text-xs font-medium truncate">{session?.user?.email}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                          <Shield size={16} className="text-muted-foreground" />
+                          <div>
+                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter">Account Status</p>
+                            <p className="text-xs font-medium text-emerald-500 flex items-center gap-1">
+                              Verified <Activity size={10} />
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 mt-2 border-t border-border">
+                          <button 
+                            onClick={() => signOut()}
+                            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-600 transition-all group/btn"
+                          >
+                            <div className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest">
+                              <LogOut size={16} />
+                              Sign Out
+                            </div>
+                            <ChevronRight size={14} className="opacity-0 group-hover/btn:opacity-100 -translate-x-2 group-hover/btn:translate-x-0 transition-all" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
 
