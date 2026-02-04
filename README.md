@@ -1,4 +1,4 @@
-# LogPulse 🚀🛰️
+# <img src="public/logo.png" width="40" height="40" align="center" /> LogPulse 🚀🛰️
 
 **Real-time Distributed Log Monitoring & Analytics Platform.**
 

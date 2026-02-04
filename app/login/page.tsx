@@ -78,8 +78,8 @@ export default function LoginPage() {
         className="w-full max-w-md bg-white dark:bg-[#111113] border border-border/60 dark:border-border shadow-2xl rounded-3xl p-8 relative z-10"
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-primary/20">
-            <Activity className="text-white w-7 h-7" />
+          <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-2xl flex items-center justify-center mb-6 shadow-xl border border-border/30 overflow-hidden p-2.5">
+            <img src="/logo.png" alt="LogPulse" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-foreground dark:text-[#E2E2D1] tracking-tight">LogPulse Access</h1>
           
