@@ -6,25 +6,75 @@ import KPIRibbon from "@/components/KPIRibbon";
 import LogFeed from "@/components/LogFeed";
 import LogTrendChart from "@/components/LogTrendChart";
 import LogsView from "@/components/LogsView";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function Home() {
+function DashboardContent() {
   const { logs, notifications, clearNotifications, isConnected } = useSocket();
   const [chartData, setChartData] = useState<{ time: string; count: number }[]>([]);
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [nodes, setNodes] = useState<any[]>([]);
   const [widgetOrder, setWidgetOrder] = useState<string[]>(["feed", "side"]);
-  const [activeView, setActiveView] = useState<"dashboard" | "logs" | "settings">("dashboard");
+  const searchParams = useSearchParams();
+  const initialView = searchParams.get("view") as "dashboard" | "logs" | "settings" || "dashboard";
+  const [activeView, setActiveView] = useState<"dashboard" | "logs" | "settings">(initialView);
+  const [hasInitializedChart, setHasInitializedChart] = useState(false);
 
-  // Update chart data based on logs
+  // Sync logs and nodes info
   useEffect(() => {
-    const now = new Date();
-    const timeStr = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-    
-    setChartData(prev => {
-      const newData = [...prev, { time: timeStr, count: logs.length > 0 ? Math.floor(Math.random() * 20) + 10 : 0 }];
-      return newData.slice(-10); // Show last 10 points
-    });
+    fetch("/api/nodes").then(res => res.json()).then(setNodes).catch(console.error);
+  }, [logs]);
+
+  // Initialize chart data from historical logs once they load
+  useEffect(() => {
+    if (logs.length > 0 && !hasInitializedChart) {
+      console.log("📊 Initializing Trend Chart with", logs.length, "historical logs");
+      const initialData: { time: string; count: number }[] = [];
+      const now = new Date();
+      
+      // Create 15 buckets (last 75 seconds in 5s intervals) for a fuller initial graph
+      for (let i = 14; i >= 0; i--) {
+        const bucketTime = new Date(now.getTime() - i * 5000);
+        const timeStr = bucketTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        // Count logs in this 5s window
+        const bucketStart = bucketTime.getTime() - 2500;
+        const bucketEnd = bucketTime.getTime() + 2500;
+        const count = logs.filter(l => {
+          const logDate = new Date(l.timestamp);
+          if (isNaN(logDate.getTime())) return false;
+          return logDate.getTime() >= bucketStart && logDate.getTime() <= bucketEnd;
+        }).length;
+        
+        initialData.push({ time: timeStr, count });
+      }
+      setChartData(initialData);
+      setHasInitializedChart(true);
+    }
+  }, [logs, hasInitializedChart]);
+
+  // Update chart data based on real frequency
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      
+      setChartData(prev => {
+        if (prev.length === 0) return prev; 
+        
+        const fiveSecsAgo = now.getTime() - 5000;
+        const currentCount = logs.filter(l => {
+          const logDate = new Date(l.timestamp);
+          return !isNaN(logDate.getTime()) && logDate.getTime() > fiveSecsAgo;
+        }).length;
+        
+        const newData = [...prev, { time: timeStr, count: currentCount }];
+        return newData.slice(-15); // Consistent with initial size
+      });
+    }, 5000); 
+
+    return () => clearInterval(interval);
   }, [logs]);
 
   const handleSearch = async (query: string) => {
@@ -81,8 +131,31 @@ export default function Home() {
             </div>
           </div>
 
-          <KPIRibbon logsCount={logs.length} errorRate={errorCount.toString()} />
-          
+          <KPIRibbon 
+            logsCount={logs.length} 
+            errorRate={errorCount.toString()} 
+            connectedNodes={nodes.length}
+          />
+
+          {!isConnected && logs.length === 0 && (
+            <div className="p-8 border-2 border-dashed border-primary/20 rounded-3xl bg-primary/5 flex flex-col items-center text-center space-y-4 animate-in zoom-in-95 duration-700">
+              <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-sm">
+                <span className="text-2xl">📡</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-[#4A4A2C] dark:text-[#E2E2D1]">Waiting for Ingestion</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                  No logs detected yet. Connect an external server or start the simulation to see the pulse.
+                </p>
+              </div>
+              <button 
+                onClick={() => window.location.href = '/nodes'}
+                className="bg-primary text-white px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-widest hover:scale-105 transition-all cursor-pointer"
+              >
+                Connect Your First Node
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {widgetOrder.map((widget) => (
               widget === "feed" ? (
@@ -98,8 +171,13 @@ export default function Home() {
                   <div className="p-6 bg-white dark:bg-[#111113] border border-border rounded-2xl">
                     <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">AI Observations</h3>
                     <p className="text-sm text-[#616164] dark:text-[#A1A1A5] leading-relaxed">
-                      Log ingestion patterns are currently <span className="text-primary font-bold">Optimal</span>.
-                      No abnormal spikes detected in error rates over the last 15 minutes.
+                      {logs.length > 50 ? (
+                        <>Log ingestion patterns are currently <span className="text-rose-500 font-bold">High Density</span>. Ensure downstream services are scaling accordingly.</>
+                      ) : logs.length > 0 ? (
+                        <>Log ingestion patterns are currently <span className="text-primary font-bold">Optimal</span>. System latency is stable at ~12ms.</>
+                      ) : (
+                        <>System is <span className="text-muted-foreground font-bold italic">Idle</span>. No active ingestion detected from connected hardware nodes.</>
+                      )}
                     </p>
                   </div>
                   <LogTrendChart data={chartData} />
@@ -117,5 +195,13 @@ export default function Home() {
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading LogPulse...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

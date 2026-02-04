@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LogPulse 🚀🛰️
 
-## Getting Started
+**Real-time Distributed Log Monitoring & Analytics Platform.**
 
-First, run the development server:
+LogPulse is a high-performance, open-source logging infrastructure designed to aggregate, visualize, and analyze logs from a distributed fleet of servers in real-time. Built with a focus on speed, aesthetics, and developer experience.
+
+![Dashboard Preview](public/dashboard_preview.png)
+
+## ✨ Features
+
+- **Distributed Ingestion**: Multi-node support with per-server API key management.
+- **Real-time Pulse**: Sub-second log streaming powered by Redis and Socket.io.
+- **Micro-Visualizations**: Time-series trend charts and real-time KPI tracking.
+- **Smart Fingerprinting**: Automatically groups similar logs to reduce alert fatigue.
+- **Enterprise Security**: Role-based access control (RBAC), GitHub/Google OAuth, and rate limiting.
+- **Global Search**: High-speed historical log retrieval across your entire fleet.
+- **Developer First**: One-click exports (CSV/JSON), dark mode, and a mobile-responsive dashboard.
+
+## 🛠️ Tech Stack
+
+- **Kernel**: Next.js 15 (App Router)
+- **Pulse**: Redis Pub/Sub + Socket.io
+- **Persistence**: MongoDB (Mongoose)
+- **Identity**: NextAuth.js (Auth.js v5)
+- **Visuals**: Tailwind CSS + Framer Motion + Recharts
+- **Icons**: Lucide React
+
+## 🚀 Quick Start
+
+### 1. Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/sourabhbarwal/Log-pulse.git
+cd log-pulse
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+MONGODB_URI=your_mongo_uri
+REDIS_URL=your_redis_url
+AUTH_SECRET=your_auth_secret
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-## Learn More
+# Optional OAuth
+AUTH_GOOGLE_ID=...
+AUTH_GOOGLE_SECRET=...
+AUTH_GITHUB_ID=...
+AUTH_GITHUB_SECRET=...
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Running for Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev:socket
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛰️ Connecting Your Fleet
 
-## Deploy on Vercel
+1. Navigate to the **Server Fleet** tab.
+2. Create a new server node (e.g., "Auth-API").
+3. Copy the generated `lp_...` API Key.
+4. Send your first log:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# PowerShell
+Invoke-RestMethod -Uri "http://localhost:3000/api/logs/ingest" `
+  -Method Post `
+  -Headers @{"x-api-key"="lp_your_key"} `
+  -ContentType "application/json" `
+  -Body '{"level": "ERROR", "message": "Connection timeout"}'
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📜 Logging Standards
+
+To get the most out of LogPulse, use the following log structure:
+
+| Field     | Type   | Description                             |
+| :-------- | :----- | :-------------------------------------- |
+| `level`   | String | `INFO`, `WARN`, or `ERROR` (Required)   |
+| `message` | String | The main log message (Required)         |
+| `details` | Object | Arbitrary JSON for debugging (Optional) |
+
+Example:
+
+```json
+{
+  "level": "ERROR",
+  "message": "Database write failed",
+  "details": {
+    "collection": "users",
+    "retries": 3,
+    "error_code": 11000
+  }
+}
+```
+
+## 📄 License
+
+MIT License - Copyright (c) 2026 Sourabh Barwal
