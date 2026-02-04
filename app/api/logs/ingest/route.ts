@@ -40,10 +40,7 @@ export async function POST(req: Request) {
       details: details || {}
     };
 
-    // 1. Persist to MongoDB
-    await Log.create(logEntry);
-
-    // 2. Publish to Redis for real-time stream
+    // 1. Publish to Redis for real-time stream and background persistence
     if (redis) {
       await redis.publish("log-stream", JSON.stringify(logEntry));
     }

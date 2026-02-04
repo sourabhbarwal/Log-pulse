@@ -6,21 +6,53 @@ import KPIRibbon from "@/components/KPIRibbon";
 import LogFeed from "@/components/LogFeed";
 import LogTrendChart from "@/components/LogTrendChart";
 import LogsView from "@/components/LogsView";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function Home() {
+function DashboardContent() {
   const { logs, notifications, clearNotifications, isConnected } = useSocket();
   const [chartData, setChartData] = useState<{ time: string; count: number }[]>([]);
   const [searchResults, setSearchResults] = useState<any[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [nodes, setNodes] = useState<any[]>([]);
   const [widgetOrder, setWidgetOrder] = useState<string[]>(["feed", "side"]);
-  const [activeView, setActiveView] = useState<"dashboard" | "logs" | "settings">("dashboard");
+  const searchParams = useSearchParams();
+  const initialView = searchParams.get("view") as "dashboard" | "logs" | "settings" || "dashboard";
+  const [activeView, setActiveView] = useState<"dashboard" | "logs" | "settings">(initialView);
+  const [hasInitializedChart, setHasInitializedChart] = useState(false);
 
   // Sync logs and nodes info
   useEffect(() => {
     fetch("/api/nodes").then(res => res.json()).then(setNodes).catch(console.error);
   }, [logs]);
+
+  // Initialize chart data from historical logs once they load
+  useEffect(() => {
+    if (logs.length > 0 && !hasInitializedChart) {
+      console.log("📊 Initializing Trend Chart with", logs.length, "historical logs");
+      const initialData: { time: string; count: number }[] = [];
+      const now = new Date();
+      
+      // Create 15 buckets (last 75 seconds in 5s intervals) for a fuller initial graph
+      for (let i = 14; i >= 0; i--) {
+        const bucketTime = new Date(now.getTime() - i * 5000);
+        const timeStr = bucketTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        
+        // Count logs in this 5s window
+        const bucketStart = bucketTime.getTime() - 2500;
+        const bucketEnd = bucketTime.getTime() + 2500;
+        const count = logs.filter(l => {
+          const logDate = new Date(l.timestamp);
+          if (isNaN(logDate.getTime())) return false;
+          return logDate.getTime() >= bucketStart && logDate.getTime() <= bucketEnd;
+        }).length;
+        
+        initialData.push({ time: timeStr, count });
+      }
+      setChartData(initialData);
+      setHasInitializedChart(true);
+    }
+  }, [logs, hasInitializedChart]);
 
   // Update chart data based on real frequency
   useEffect(() => {
@@ -29,15 +61,21 @@ export default function Home() {
       const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       
       setChartData(prev => {
-        // Only show actual count if linked, otherwise 0
-        const currentCount = isConnected ? logs.slice(0, 10).length : 0; 
+        if (prev.length === 0) return prev; 
+        
+        const fiveSecsAgo = now.getTime() - 5000;
+        const currentCount = logs.filter(l => {
+          const logDate = new Date(l.timestamp);
+          return !isNaN(logDate.getTime()) && logDate.getTime() > fiveSecsAgo;
+        }).length;
+        
         const newData = [...prev, { time: timeStr, count: currentCount }];
-        return newData.slice(-12); // Show last minute (approx)
+        return newData.slice(-15); // Consistent with initial size
       });
-    }, 5000); // Update every 5s
+    }, 5000); 
 
     return () => clearInterval(interval);
-  }, [logs, isConnected]);
+  }, [logs]);
 
   const handleSearch = async (query: string) => {
     if (!query.trim()) {
@@ -157,5 +195,13 @@ export default function Home() {
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading LogPulse...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }

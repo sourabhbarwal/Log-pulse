@@ -9,8 +9,13 @@ export default auth(async (req) => {
   const isLoginPage = req.nextUrl.pathname === "/login";
   const isApiRoute = req.nextUrl.pathname.startsWith("/api");
 
-  // Auth Protection: Allow auth internals and the external ingestion endpoint
-  if (!isLoggedIn && !isLoginPage && !req.nextUrl.pathname.startsWith("/api/auth") && !req.nextUrl.pathname.startsWith("/api/logs/ingest")) {
+  // Auth Protection: Allow auth internals, socket.io, health check, and ingestion
+  const isAuthInternal = req.nextUrl.pathname.startsWith("/api/auth");
+  const isIngest = req.nextUrl.pathname.startsWith("/api/logs/ingest");
+  const isHealth = req.nextUrl.pathname.startsWith("/api/health");
+  const isSocket = req.nextUrl.pathname.startsWith("/socket.io");
+
+  if (!isLoggedIn && !isLoginPage && !isAuthInternal && !isIngest && !isHealth && !isSocket) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     return Response.redirect(loginUrl);
   }

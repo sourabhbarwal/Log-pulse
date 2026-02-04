@@ -16,10 +16,10 @@ export const startLogListener = (onLog: (log: any) => void) => {
 
   subClient.subscribe(LOG_CHANNEL, (err, count) => {
     if (err) {
-      console.error('Failed to subscribe to Redis channel:', err);
+      console.error('❌ Failed to subscribe to Redis channel:', err);
       return;
     }
-    console.log(`Subscribed to ${LOG_CHANNEL}. Current subscriptions: ${count}`);
+    console.log(`📡 Subscribed to Redis: ${LOG_CHANNEL}. Active subscriptions: ${count}`);
   });
 
   subClient.on('message', async (channel, message) => {

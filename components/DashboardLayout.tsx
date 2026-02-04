@@ -15,6 +15,7 @@ import NotificationPanel from "./NotificationPanel";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { usePathname, useRouter } from "next/navigation";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -38,6 +39,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastReadTime, setLastReadTime] = React.useState<number>(0);
   const { data: session } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const unreadCount = notifications.filter(
     (n) => new Date(n.timestamp).getTime() > lastReadTime
@@ -52,6 +55,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         .toUpperCase()
         .slice(0, 2)
     : "??";
+
+  const currentView = activeView as any;
 
   return (
     <div className="flex h-screen bg-[#FDFDFD] dark:bg-[#0A0A0B] text-foreground overflow-hidden font-sans relative">
@@ -74,10 +79,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <nav className="flex-1 flex flex-col gap-8">
           <NavItem 
             icon={<LayoutDashboard size={20} />} 
-            active={activeView === "dashboard"}
+            active={currentView === "dashboard" && pathname === '/'}
             onClick={() => {
-              if (window.location.pathname !== '/') {
-                window.location.href = '/';
+              if (pathname !== '/') {
+                router.push('/');
               } else {
                 onViewChange?.("dashboard");
               }
@@ -86,10 +91,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           />
           <NavItem 
             icon={<FileText size={20} />} 
-            active={activeView === "logs"}
+            active={currentView === "logs" || (pathname === '/' && currentView === 'logs')}
             onClick={() => {
-              if (window.location.pathname !== '/') {
-                window.location.href = '/?view=logs';
+              if (pathname !== '/') {
+                router.push('/?view=logs');
               } else {
                 onViewChange?.("logs");
               }
@@ -98,8 +103,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           />
           <NavItem 
             icon={<Server size={20} />} 
-            active={window.location.pathname === '/nodes'}
-            onClick={() => window.location.href = '/nodes'} 
+            active={pathname === '/nodes'}
+            onClick={() => router.push('/nodes')} 
             title="Server Fleet"
           />
           <NavItem 
@@ -120,8 +125,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <div className="mt-auto">
           <NavItem 
             icon={<Settings size={20} />} 
-            active={activeView === "settings"}
-            onClick={() => window.location.href = '/health'} 
+            active={currentView === "settings" || pathname === '/health'}
+            onClick={() => router.push('/health')} 
             title="System Health & Settings"
           />
         </div>

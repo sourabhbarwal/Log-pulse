@@ -36,7 +36,7 @@ const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearch
   }, [logs]);
 
   return (
-    <div className="flex flex-col h-[500px] border border-border rounded-2xl bg-white dark:bg-[#111113] overflow-hidden shadow-sm">
+    <div className="flex flex-col h-[600px] border border-border rounded-2xl bg-white dark:bg-[#111113] overflow-hidden shadow-sm">
       <div className="px-6 py-4 border-b border-border bg-background/50 dark:bg-slate-900/50 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex p-1 bg-[#F1F3F3] dark:bg-slate-800 rounded-lg">
@@ -80,7 +80,7 @@ const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearch
         </div>
       </div>
       
-      <ScrollArea className="flex-1 px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
         <div className="space-y-3">
           <AnimatePresence initial={false}>
             {filteredLogs.length === 0 ? (
@@ -118,7 +118,7 @@ const LogFeed: React.FC<LogFeedProps> = ({ logs, title = "Live Stream", isSearch
             )}
           </AnimatePresence>
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 };
