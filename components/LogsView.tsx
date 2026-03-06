@@ -32,8 +32,8 @@ interface LogsViewProps {
 }
 
 const LogsView: React.FC<LogsViewProps> = ({ logs }) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [levelFilter, setLevelFilter] = React.useState<string>("ALL");
   const [sourceFilter, setSourceFilter] = React.useState<string>("");
 

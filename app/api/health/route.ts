@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import mongoose from 'mongoose';
-import Redis from 'ioredis';
+import { redis } from '@/lib/redis';
 import dbConnect from '@/lib/mongodb';
 
 export async function GET() {
@@ -37,16 +37,10 @@ export async function GET() {
 
   try {
     // Check Redis
-    const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
     const ping = await redis.ping();
     if (ping === 'PONG') {
       healthStatus.services.redis = 'connected';
     }
-    await redis.quit();
   } catch (err) {
     console.error('Redis Health Check Error:', err);
     healthStatus.services.redis = 'error';
