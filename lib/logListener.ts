@@ -1,4 +1,4 @@
-import { Redis } from 'ioredis';
+import { redisSub } from './redis';
 import Log from '@/models/Log';
 import dbConnect from './mongodb';
 import { generateFingerprint } from './fingerprint';
@@ -8,13 +8,8 @@ import { sendWebhookAlert } from './webhooks';
 const LOG_CHANNEL = 'log-stream';
 
 export const startLogListener = (onLog: (log: any) => void) => {
-  const subClient = new Redis(process.env.REDIS_URL!, {
-    tls: {
-      rejectUnauthorized: false
-    }
-  });
 
-  subClient.subscribe(LOG_CHANNEL, (err, count) => {
+  redisSub.subscribe(LOG_CHANNEL, (err, count) => {
     if (err) {
       console.error('❌ Failed to subscribe to Redis channel:', err);
       return;
@@ -22,7 +17,7 @@ export const startLogListener = (onLog: (log: any) => void) => {
     console.log(`📡 Subscribed to Redis: ${LOG_CHANNEL}. Active subscriptions: ${count}`);
   });
 
-  subClient.on('message', async (channel, message) => {
+  redisSub.on('message', async (channel, message) => {
     if (channel === LOG_CHANNEL) {
       try {
         const logData = JSON.parse(message);
@@ -52,7 +47,6 @@ export const startLogListener = (onLog: (log: any) => void) => {
   });
 
   return () => {
-    subClient.unsubscribe(LOG_CHANNEL);
-    subClient.quit();
+    redisSub.unsubscribe(LOG_CHANNEL);
   };
 };

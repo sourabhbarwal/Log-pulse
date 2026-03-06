@@ -1,8 +1,4 @@
-import { Redis } from 'ioredis';
-
-const redis = new Redis(process.env.REDIS_URL!, {
-  tls: { rejectUnauthorized: false }
-});
+import { redis } from '@/lib/redis';
 
 const THRESHOLD_WINDOW_SECONDS = 60;
 const ERROR_THRESHOLD = 5;

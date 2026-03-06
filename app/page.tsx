@@ -21,10 +21,10 @@ function DashboardContent() {
   const [activeView, setActiveView] = useState<"dashboard" | "logs" | "settings">(initialView);
   const [hasInitializedChart, setHasInitializedChart] = useState(false);
 
-  // Sync logs and nodes info
+  // Fetch nodes on mount
   useEffect(() => {
     fetch("/api/nodes").then(res => res.json()).then(setNodes).catch(console.error);
-  }, [logs]);
+  }, []);
 
   // Initialize chart data from historical logs once they load
   useEffect(() => {
