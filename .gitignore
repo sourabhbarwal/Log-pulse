@@ -40,5 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# .md files
-*.md
+#deployment docs
+DEPLOYMENT.md
+FUTURE_ENHANCEMENTS.md
+INGESTION_GUIDE.md
+LOGPULSE_OVERVIEW.md
+VERIFICATION_GUIDE.md
+FREE_DEPLOYMENT_RENDER.md
