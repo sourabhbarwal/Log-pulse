@@ -16,13 +16,11 @@ export default auth(async (req) => {
   const isSocket = req.nextUrl.pathname.startsWith("/socket.io");
 
   if (!isLoggedIn && !isLoginPage && !isAuthInternal && !isIngest && !isHealth && !isSocket) {
-    const loginUrl = new URL("/login", req.nextUrl.origin);
-    return Response.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 
   if (isLoggedIn && isLoginPage) {
-    const dashboardUrl = new URL("/", req.nextUrl.origin);
-    return Response.redirect(dashboardUrl);
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
 
   // Basic API Rate Limiting (Conceptual for Demo)

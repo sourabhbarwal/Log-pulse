@@ -38,12 +38,19 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastReadTime, setLastReadTime] = React.useState<number>(0);
+
+  React.useEffect(() => {
+    const saved = localStorage.getItem("lastReadTime");
+    if (saved) setLastReadTime(parseInt(saved, 10));
+  }, []);
   const { data: session } = useSession();
   const pathname = usePathname();
 
-  const unreadCount = notifications.filter(
-    (n) => new Date(n.timestamp).getTime() > lastReadTime
-  ).length;
+  const unreadCount = React.useMemo(() => {
+    return notifications.filter(
+      (n) => new Date(n.timestamp).getTime() > lastReadTime
+    ).length;
+  }, [notifications, lastReadTime]);
 
   const userInitials = session?.user?.name
     ? session.user.name
@@ -191,7 +198,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           notifications={notifications}
           onClear={onClearNotifications}
           onAcknowledge={() => {
-            setLastReadTime(Date.now());
+            const now = Date.now();
+            setLastReadTime(now);
+            localStorage.setItem("lastReadTime", now.toString());
             setIsNotifOpen(false);
           }}
         />

@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { io, Socket } from "socket.io-client";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 interface SocketContextType {
@@ -19,16 +20,24 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
   const [logs, setLogs] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    // Initial fetch for historical logs (last 48h)
+    // Only proceed if authenticated
+    if (status !== "authenticated") return;
     const fetchHistory = async () => {
       try {
         const res = await fetch("/api/logs");
         if (res.ok) {
           const history = await res.json();
-          // Keep a healthy buffer for historical logs
-          setLogs(history.slice(0, 100)); 
+          if (Array.isArray(history)) {
+            setLogs(history.slice(0, 100)); 
+          } else {
+            console.warn("History API returned non-array data:", history);
+            setLogs([]);
+          }
+        } else {
+          setLogs([]);
         }
       } catch (err) {
         console.error("Failed to load history:", err);
