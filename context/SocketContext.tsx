@@ -37,7 +37,8 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
     
     fetchHistory();
 
-    const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000', {
+    const socketUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+    const socketInstance = io(socketUrl, {
       reconnectionAttempts: 5,
       reconnectionDelay: 5000,
     });
