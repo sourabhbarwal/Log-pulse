@@ -11,6 +11,7 @@ import {
   Server
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 import NotificationPanel from "./NotificationPanel";
 import { useSession, signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
@@ -38,6 +39,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastReadTime, setLastReadTime] = React.useState<number>(0);
   const { data: session } = useSession();
+  const pathname = usePathname();
 
   const unreadCount = notifications.filter(
     (n) => new Date(n.timestamp).getTime() > lastReadTime
@@ -76,7 +78,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             icon={<LayoutDashboard size={20} />} 
             active={activeView === "dashboard"}
             onClick={() => {
-              if (window.location.pathname !== '/') {
+              if (pathname !== '/') {
                 window.location.href = '/';
               } else {
                 onViewChange?.("dashboard");
@@ -88,7 +90,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             icon={<FileText size={20} />} 
             active={activeView === "logs"}
             onClick={() => {
-              if (window.location.pathname !== '/') {
+              if (pathname !== '/') {
                 window.location.href = '/?view=logs';
               } else {
                 onViewChange?.("logs");
@@ -98,7 +100,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           />
           <NavItem 
             icon={<Server size={20} />} 
-            active={window.location.pathname === '/nodes'}
+            active={pathname === '/nodes'}
             onClick={() => window.location.href = '/nodes'} 
             title="Server Fleet"
           />

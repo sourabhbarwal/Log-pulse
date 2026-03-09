@@ -6,12 +6,17 @@ import Node from "@/models/Node";
 import { v4 as uuidv4 } from "uuid";
 
 export async function GET() {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  await dbConnect();
-  const nodes = await Node.find({ owner: session.user?.email }).sort({ createdAt: -1 });
-  return NextResponse.json(nodes);
+    await dbConnect();
+    const nodes = await Node.find({ owner: session.user?.email }).sort({ createdAt: -1 });
+    return NextResponse.json(nodes);
+  } catch (error) {
+    console.error("Failed to fetch nodes:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }
 
 export async function POST(req: Request) {
